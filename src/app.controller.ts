@@ -14,4 +14,10 @@ export class AppController {
     console.log('PORT de l application',this.configService.get('APP_PORT'));
     return this.appService.getHello();
   }
+  @Get()
+  getSecret() {
+    const secret = this.configService.get<string>('SECRET');
+    console.log('SECRET:', secret);
+    return secret;
+  }
 }

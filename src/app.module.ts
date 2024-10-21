@@ -15,52 +15,55 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MailModule } from './mail/mail.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
-
 @Module({
   imports: [
     TodoModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig]
+      load: [appConfig],
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',//process.env.DB_HOST,
-      port: 3306, //parseInt(process.env.DB_PORT),
-      username: 'root', //process.env.DB_USERNAME,
-      password: '',// process.env.DB_PASSWORD,
-      database: 'nest-cv',//process.env.DB_NAME,
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT, 10) || 3306,
+      username: process.env.DB_USERNAME || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'nest-cv',
       autoLoadEntities: true,
-      entities: ["dist/**/*.entity{.ts,.js}"],
-      synchronize: true,
-      debug: false
+      synchronize: process.env.NODE_ENV !== 'production', 
+      debug: process.env.DB_DEBUG === 'true', 
     }),
     CvModule,
     UserModule,
     EventEmitterModule.forRoot(),
     MailModule,
     CacheModule.register({
-
-    })
+      ttl: 300, 
+      max: 100, 
+    }),
   ],
   controllers: [AppController],
   providers: [
     AppService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor
-    }
+      useClass: CacheInterceptor,
+    },
   ],
-  exports: [AppService]
+  exports: [AppService],
 })
-export class AppModule implements NestModule{
+export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {
-    consumer.apply(FirstMiddleware).forRoutes('hello',
-      {path: 'todo', method: RequestMethod.GET},
-      {path: 'todo*', method: RequestMethod.DELETE},
-    )
-      .apply(logger).forRoutes('')
-      .apply(HelmetMiddleware).forRoutes('')
-    ;
+    consumer
+      .apply(FirstMiddleware)
+      .forRoutes(
+        'hello',
+        { path: 'todo', method: RequestMethod.GET },
+        { path: 'todo*', method: RequestMethod.DELETE }
+      )
+      .apply(logger)
+      .forRoutes('')
+      .apply(HelmetMiddleware)
+      .forRoutes('');
   }
 }

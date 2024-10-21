@@ -14,11 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private configService: ConfigService,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>
+    
   ) {
+
+    const secretKey ='0a1b2c3d4e5f6789abcdef1234567890abcdef1234567890abcdef1234567890a';
+    console.log('JWT Secret:', secretKey); 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get(''),
+      secretOrKey: secretKey
     });
   }
 
